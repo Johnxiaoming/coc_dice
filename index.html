@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COC D100 筛子 - Call of Cthulhu Dice Roller</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎲 COC D100 筛子</h1>
+            <p class="subtitle">克苏鲁呼唤100面筛子 | Call of Cthulhu Dice Roller</p>
+        </header>
+
+        <main>
+            <div class="dice-section">
+                <div class="result-display" id="resultDisplay">
+                    <div class="result-number">?</div>
+                    <div class="result-text" id="resultText"></div>
+                </div>
+
+                <div class="controls">
+                    <div class="skill-input">
+                        <label for="skillValue">技能值 (Skill Value):</label>
+                        <input type="number" id="skillValue" min="0" max="100" value="50" placeholder="0-100">
+                    </div>
+                    
+                    <button class="roll-button" id="rollButton" onclick="rollDice()">
+                        掷骰 Roll D100
+                    </button>
+                    
+                    <div class="difficulty-buttons">
+                        <button class="difficulty-btn" onclick="rollWithDifficulty('regular')">普通 Regular</button>
+                        <button class="difficulty-btn" onclick="rollWithDifficulty('hard')">困难 Hard</button>
+                        <button class="difficulty-btn" onclick="rollWithDifficulty('extreme')">极难 Extreme</button>
+                    </div>
+                </div>
+
+                <div class="history" id="history">
+                    <h3>投掷历史 (Roll History)</h3>
+                    <div class="history-list" id="historyList"></div>
+                    <button class="clear-button" onclick="clearHistory()">清除历史 Clear</button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>MIT License | <a href="https://github.com/Johnxiaoming/coc-dice" target="_blank">GitHub Repository</a></p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
