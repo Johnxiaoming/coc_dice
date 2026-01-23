@@ -64,8 +64,8 @@ function displayResult(roll, skillValue, difficulty) {
         resultMessage = `💀 大失败! Critical Failure! (${difficultyName})`;
         resultClass = 'critical-failure';
     }
-    // Regular critical failure: roll 96-99 and over half skill
-    else if (roll >= 96 && skillValue < 50) {
+    // Regular critical failure: roll 96-99 when skill is 50 or higher
+    else if (roll >= 96 && skillValue >= 50) {
         resultMessage = `💀 大失败! Critical Failure! (${difficultyName})`;
         resultClass = 'critical-failure';
     }
@@ -100,7 +100,7 @@ function animateRoll(element) {
 
 // Add roll to history
 function addToHistory(roll, skillValue, difficulty) {
-    const timestamp = new Date().toLocaleTimeString('zh-CN');
+    const timestamp = new Date().toLocaleTimeString();
     
     let difficultyName = '普通';
     if (difficulty === 'hard') difficultyName = '困难';
