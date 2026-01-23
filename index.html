@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>克苏鲁命运终端 - V5.0 全平台版</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+
+        :root {
+            --toxic-green: #2b7a0b;
+            --blood-red: #8a0b0b;
+            --rust-orange: #d35400;
+            --faded-paper: #cbbfa7;
+            --void-black: #050505;
+        }
+
+        body {
+            background-color: var(--void-black);
+            color: var(--faded-paper);
+            font-family: 'Special Elite', 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            overflow: hidden; /* 强制无滚动条 */
+            background-image: 
+                radial-gradient(circle at 50% 50%, #151515 0%, #000 90%),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, #000 3px);
+            background-size: cover;
+            user-select: none;
+            touch-action: manipulation; /* 优化触控响应 */
+        }
+
+        @keyframes pulse-danger {
+            0% { border-color: #3a4a3a; box-shadow: 0 0 10px rgba(43, 122, 11, 0.1); }
+            50% { border-color: var(--toxic-green); box-shadow: 0 0 40px rgba(43, 122, 11, 0.3); }
+            100% { border-color: #3a4a3a; box-shadow: 0 0 10px rgba(43, 122, 11, 0.1); }
+        }
+
+        @keyframes countdown-zoom {
+            0% { transform: scale(1.5); opacity: 0; filter: blur(5px); }
+            20% { transform: scale(1); opacity: 1; filter: blur(0px); }
+            90% { transform: scale(0.9); opacity: 0.8; }
+            100% { transform: scale(0.8); opacity: 0; }
+        }
+
+        #clock {
+            font-size: 1.5rem; /* 电视上字体稍大更清晰 */
+            margin-bottom: 5vh;
+            letter-spacing: 3px;
+            color: #445544;
+            text-shadow: 0 0 5px #000;
+            border-bottom: 1px solid #222;
+            padding-bottom: 10px;
+        }
+
+        .dice-container {
+            display: flex;
+            gap: 5vw; /* 响应式间距 */
+            margin-bottom: 2rem;
+            perspective: 1000px;
+        }
+
+        .dice-box {
+            width: 18vh; /* 响应式大小 */
+            height: 24vh;
+            max-width: 140px;
+            max-height: 180px;
+            border: 3px double #445544;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: rgba(0, 5, 0, 0.8);
+            border-radius: 4px;
+            animation: pulse-danger 5s infinite ease-in-out;
+        }
+
+        .dice-label {
+            position: absolute;
+            top: -30px;
+            font-size: 1rem;
+            color: #556655;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .digit {
+            font-size: 10vh; /* 响应式字体 */
+            font-weight: bold;
+            color: var(--faded-paper);
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        .rolling {
+            color: #333;
+            text-shadow: 0 0 8px var(--toxic-green);
+            filter: blur(2px);
+            transform: scale(0.95);
+        }
+
+        #roll-btn {
+            margin-top: 3vh;
+            padding: 15px 50px;
+            background: transparent;
+            border: 2px solid var(--toxic-green);
+            color: var(--toxic-green);
+            font-family: inherit;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            box-shadow: 0 0 15px rgba(43, 122, 11, 0.1);
+            outline: none; /* 移除默认蓝框 */
+        }
+
+        /* 电视遥控器焦点样式 & 鼠标悬停 */
+        #roll-btn:hover, #roll-btn:focus {
+            background: var(--toxic-green);
+            color: #000;
+            box-shadow: 0 0 50px var(--toxic-green);
+            transform: scale(1.05);
+        }
+
+        #roll-btn:active {
+            transform: scale(0.95);
+            background: rgba(43, 122, 11, 0.8);
+        }
+
+        #roll-btn:disabled {
+            border-color: #333;
+            background: transparent;
+            color: #333;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #status-text {
+            margin-top: 2rem;
+            height: 2rem;
+            font-size: 1.2rem;
+            color: #666;
+            font-style: italic;
+            min-width: 300px;
+            text-align: center;
+            font-weight: lighter;
+            letter-spacing: 1px;
+        }
+
+        #result-display {
+            margin-top: 1vh;
+            font-size: 2rem;
+            height: 5rem; 
+            line-height: 5rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8);
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .countdown-num {
+            color: var(--rust-orange);
+            font-size: 5rem;
+            text-shadow: 0 0 20px rgba(211, 84, 0, 0.5);
+            animation: countdown-zoom 0.9s ease-out forwards;
+            display: block;
+        }
+
+        .final-result {
+            font-size: 4rem;
+            color: var(--faded-paper);
+        }
+
+        .critical-success { color: #00ffea; text-shadow: 0 0 30px #00ffea; font-size: 4rem; }
+        .critical-fail { color: #ff0000; text-shadow: 0 0 30px #ff0000; text-decoration: line-through; font-size: 4rem; }
+
+        #glitch-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(100, 0, 0, 0.1);
+            pointer-events: none;
+            opacity: 0;
+            z-index: 999;
+            mix-blend-mode: overlay;
+        }
+
+        #seed-log {
+            position: fixed;
+            bottom: 2vh;
+            width: 100%;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #1a1a1a; 
+            font-family: sans-serif;
+            pointer-events: none;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="glitch-overlay"></div>
+    <div id="clock">时间: 00:00:00</div>
+
+    <div class="dice-container">
+        <div class="dice-box">
+            <span class="dice-label">十位</span>
+            <div class="digit" id="digit-tens">?</div>
+        </div>
+        <div class="dice-box">
+            <span class="dice-label">个位</span>
+            <div class="digit" id="digit-ones">?</div>
+        </div>
+    </div>
+
+    <div id="result-display"></div>
+    
+    <div id="status-text">准备唤醒混沌...</div>
+
+    <button id="roll-btn" autofocus onclick="startRitual()">启动鉴定</button>
+    <div id="seed-log">时间种子: [ --- ] / [ --- ]</div>
+
+    <script>
+        // --- 全局按键监听 (PC空格/回车, 电视OK键) ---
+        document.addEventListener('keydown', function(event) {
+            const btn = document.getElementById('roll-btn');
+            
+            // 32=Space, 13=Enter
+            // 部分电视遥控器OK键也映射为 Enter
+            if (event.keyCode === 32 || event.keyCode === 13) {
+                // 阻止页面滚动等默认行为
+                event.preventDefault();
+                
+                // 如果按钮未被禁用，则触发点击逻辑
+                if (!btn.disabled) {
+                    // 视觉反馈：给按钮加一个短暂的点击效果
+                    btn.click();
+                }
+            }
+        });
+
+        // --- 音频引擎 ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function sfxLock() {
+            if(!audioCtx) return;
+            const t = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(800, t);
+            osc.frequency.exponentialRampToValueAtTime(100, t + 0.1);
+            gain.gain.setValueAtTime(0.1, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(t);
+            osc.stop(t + 0.1);
+        }
+
+        let droneOsc1, droneOsc2, droneGain;
+        function startDrone() {
+            if(!audioCtx) return;
+            const t = audioCtx.currentTime;
+            droneOsc1 = audioCtx.createOscillator();
+            droneOsc2 = audioCtx.createOscillator();
+            droneGain = audioCtx.createGain();
+            droneOsc1.type = 'sawtooth';
+            droneOsc1.frequency.setValueAtTime(50, t); 
+            droneOsc1.frequency.linearRampToValueAtTime(60, t + 3); 
+            droneOsc2.type = 'sawtooth';
+            droneOsc2.frequency.setValueAtTime(54, t); 
+            droneOsc2.frequency.linearRampToValueAtTime(65, t + 3); 
+            droneGain.gain.setValueAtTime(0, t);
+            droneGain.gain.linearRampToValueAtTime(0.05, t + 0.5); 
+            droneGain.gain.linearRampToValueAtTime(0, t + 3.5); 
+            droneOsc1.connect(droneGain);
+            droneOsc2.connect(droneGain);
+            droneGain.connect(audioCtx.destination);
+            droneOsc1.start(t);
+            droneOsc2.start(t);
+            droneOsc1.stop(t + 3.5);
+            droneOsc2.stop(t + 3.5);
+        }
+
+        function sfxSlam(isBad) {
+            if(!audioCtx) return;
+            const t = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = isBad ? 'sawtooth' : 'sine';
+            osc.frequency.setValueAtTime(100, t);
+            osc.frequency.exponentialRampToValueAtTime(10, t + 0.5);
+            gain.gain.setValueAtTime(0.5, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 1.5);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(t);
+            osc.stop(t + 1.5);
+        }
+
+        // --- 逻辑与视觉 ---
+
+        const whispers = [
+            "理智正在剥离...", "它看见你了...", "无处可逃...", 
+            "命运的齿轮...", "血液冰冷...", "精神崩坏中...", 
+            "不要回头...", "嘘..."
+        ];
+
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ":" +
+                            now.getMinutes().toString().padStart(2, '0') + ":" +
+                            now.getSeconds().toString().padStart(2, '0');
+            document.getElementById('clock').innerText = "时间: " + timeStr;
+            return now;
+        }
+        setInterval(updateClock, 1000);
+
+        function getTimeSeedDigit(modifier) {
+            const now = new Date();
+            const rawSeedStr = now.getHours().toString().padStart(2, '0') +
+                               now.getMinutes().toString().padStart(2, '0') +
+                               now.getSeconds().toString().padStart(2, '0');
+            const seed = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds() + modifier; 
+            const val = Math.floor(Math.abs(Math.sin(seed * 999) * 10000)) % 10;
+            return { val: val, seedStr: rawSeedStr };
+        }
+
+        function flickerScreen(intensity = 0.3) {
+            const overlay = document.getElementById('glitch-overlay');
+            overlay.style.opacity = Math.random() * intensity;
+            setTimeout(() => overlay.style.opacity = 0, 100);
+        }
+
+        async function startRitual() {
+            initAudio(); 
+            
+            const btn = document.getElementById('roll-btn');
+            const dTens = document.getElementById('digit-tens');
+            const dOnes = document.getElementById('digit-ones');
+            const status = document.getElementById('status-text');
+            const resultDisplay = document.getElementById('result-display');
+            const seedLog = document.getElementById('seed-log');
+
+            if(btn.disabled) return; // 防止双重触发
+
+            btn.disabled = true;
+            resultDisplay.innerHTML = ""; 
+            resultDisplay.className = "";
+            status.style.color = "#666";
+            seedLog.innerText = "时间种子: [ --- ] / [ --- ]";
+            
+            dTens.classList.add('rolling');
+            const rollIntervalTens = setInterval(() => {
+                dTens.innerText = Math.floor(Math.random() * 10);
+            }, 50);
+
+            status.innerText = "正在连接虚空...";
+            
+            dOnes.classList.add('rolling');
+            const rollIntervalOnes = setInterval(() => {
+                 dOnes.innerText = Math.floor(Math.random() * 10);
+            }, 30);
+
+            await new Promise(r => setTimeout(r, 150)); 
+            
+            clearInterval(rollIntervalOnes);
+            const resOnes = getTimeSeedDigit(0); 
+            dOnes.innerText = resOnes.val;
+            dOnes.classList.remove('rolling');
+            sfxLock(); 
+            
+            seedLog.innerText = `时间种子: [ --- ] / [ ${resOnes.seedStr} ]`;
+
+            startDrone(); 
+            
+            for(let i=3; i>0; i--) {
+                resultDisplay.innerHTML = `<span class="countdown-num">${i}</span>`;
+                status.innerText = whispers[Math.floor(Math.random() * whispers.length)];
+                status.style.color = (i===1) ? "#8a0b0b" : "#c5a059"; 
+                flickerScreen(0.2 + ((4-i) * 0.1)); 
+                await new Promise(r => setTimeout(r, 1000));
+            }
+
+            clearInterval(rollIntervalTens);
+            const resTens = getTimeSeedDigit(100);
+            dTens.innerText = resTens.val;
+            dTens.classList.remove('rolling');
+            
+            seedLog.innerText = `时间种子: [ ${resTens.seedStr} ] / [ ${resOnes.seedStr} ]`;
+
+            let finalScore = resTens.val * 10 + resOnes.val;
+            if (finalScore === 0) finalScore = 100;
+
+            status.innerText = "判决已下。";
+            resultDisplay.innerText = finalScore;
+            resultDisplay.className = "final-result"; 
+
+            if (finalScore <= 5) {
+                resultDisplay.className = "critical-success";
+                status.innerText = "大成功！古神眷顾！";
+                sfxSlam(false); 
+                flickerScreen(0.8);
+            } else if (finalScore >= 96) {
+                resultDisplay.className = "critical-fail";
+                status.innerText = "大失败！绝望降临！";
+                sfxSlam(true); 
+                flickerScreen(0.8);
+            } else {
+                sfxSlam(false); 
+            }
+
+            // 稍微延迟一会再允许下次点击，防止误触
+            setTimeout(() => {
+                btn.disabled = false;
+                // 确保焦点回到按钮上（针对电视遥控器）
+                btn.focus();
+            }, 500);
+        }
+    </script>
+</body>
+</html>
